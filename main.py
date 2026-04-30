@@ -10,17 +10,17 @@ from selenium.webdriver.common.action_chains import ActionChains
 import time
 
 import json
-import re
+import psycopg2
 
 with open("data/http___data.bibliotheken.nl_rise-alba.jsonld", "r", encoding="utf-8") as file:
     data = json.loads(file.readline())
-    text = str(data)
-    ids = re.findall(r"/alba/([A-Za-z0-9_-]+)", text)
-    urls = ['http://data.bibliotheken.nl/id/alba/' + id for id in ids]
+    graph = data[0]['@graph']
+    urls = list({entry['@id'] for entry in graph if '@id' in entry and '/alba/' in entry['@id']})
 
 def scrape(url):
 
     options = Options()
+    options.add_argument("--headless")
 
     options.binary_location = "./scraping_requirements/firefox/firefox"
 
@@ -40,7 +40,6 @@ def scrape(url):
             visible_buttons = [b for b in buttons if b.is_displayed()]
             
             if not visible_buttons:
-                print("No more 'Show more' buttons.")
                 break
             
             # Click the first visible one
@@ -61,19 +60,44 @@ def scrape(url):
     soup = bs(html, 'html.parser')
     sections = soup.find_all(class_='_outLink_1nmlh_136 _container_1urvj_33')
 
+    result = {"url": url, "sections": []}
     for section in sections:
-        print(section.find('h5').text)
+        entry = {"title": section.find('h5').text, "values": []}
         for description in section.find_all(class_='_literal_1urvj_24')[::2]:
             if description.find('span').find('span'):
-                print(description.find('span').find('span').get('title'))
+                entry["values"].append(description.find('span').find('span').get('title'))
             else:
-                print(description.find('span').text)
-
+                entry["values"].append(description.find('span').text)
         for link in section.find_all(class_='_link_1thfn_4'):
             if link:
-                print(link.text, f'href: {link.get('href')}')
-        print()
-    print('------------------------------------')
+                entry["values"].append(link.text)
+        result["sections"].append(entry)
 
-for url in urls[:5]:
-    scrape(url)
+    return result
+
+OUTPUT = "data/scraped.jsonl"
+
+# Resume: load already-scraped URLs
+scraped_urls = set()
+try:
+    with open(OUTPUT, encoding='utf-8') as f:
+        for line in f:
+            entry = json.loads(line)
+            scraped_urls.add(entry['url'])
+    print(f"Resuming: {len(scraped_urls)} already scraped.")
+except FileNotFoundError:
+    pass
+
+remaining = [u for u in urls if u not in scraped_urls]
+total = len(urls)
+done = len(scraped_urls)
+
+with open(OUTPUT, 'a', encoding='utf-8') as f:
+    for url in remaining:
+        done += 1
+        print(f"[{done}/{total}] Scraping {url}")
+        result = scrape(url)
+        f.write(json.dumps(result, ensure_ascii=False) + '\n')
+        f.flush()
+
+print("Done.")

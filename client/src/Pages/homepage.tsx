@@ -1,10 +1,8 @@
-import { FunctionComponent } from 'react';
-import styles from './Untitled.module.css';
+import styles from '../Styles/homepage.module.css';
 
-
-const Untitled: FunctionComponent = () => {
+const Home = () => {
   	return (
-    		<div className={styles.untitled}>
+    		<div className={styles.home}>
       			<div className={styles.body}>
         				<div className={styles.container}>
           					<div className={styles.header}>
@@ -497,4 +495,4 @@ const Untitled: FunctionComponent = () => {
     		</div>);
 };
 
-export default Untitled ;
+export default Home ;

@@ -1,10 +1,8 @@
-import { FunctionComponent } from 'react';
-import styles from './Untitled.module.css';
+import styles from '../Styles/albapage.module.css';
 
-
-const Untitled: FunctionComponent = () => {
+const Alba = () => {
   	return (
-    		<div className={styles.untitled}>
+    		<div className={styles.alba}>
       			<div className={styles.body}>
         				<div className={styles.header}>
           					<div className={styles.container}>
@@ -257,4 +255,4 @@ const Untitled: FunctionComponent = () => {
     		</div>);
 };
 
-export default Untitled ;
+export default Alba ;

@@ -1,0 +1,22 @@
+/* Leaflet custom styles */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}

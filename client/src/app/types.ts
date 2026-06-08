@@ -5,8 +5,8 @@ export interface Album {
   year: number;
   location: {
     name: string;
-    lat: number;
-    lng: number;
+    lat: number | null;
+    lng: number | null;
   };
   country: string;
   description?: string;
@@ -26,10 +26,13 @@ export interface Contribution {
   contributorTitle?: string;
   date: string;
   location: string;
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
   text?: string;
   language?: string;
   pageNumber?: number;
   scanUrl?: string;
+  name?: string;
+  description?: string;
+  sourceUrl?: string;
 }

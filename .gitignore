@@ -16,3 +16,4 @@ scraping_requirements/*
 node_modules
 node_modules/
 node_modules/*
+client/public/*

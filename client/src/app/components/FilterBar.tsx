@@ -7,6 +7,7 @@ interface FilterBarProps {
   setYearRange: (range: [number, number]) => void;
   selectedCountry: string;
   setSelectedCountry: (country: string) => void;
+  countries: string[];
 }
 
 export function FilterBar({
@@ -15,9 +16,10 @@ export function FilterBar({
   yearRange,
   setYearRange,
   selectedCountry,
-  setSelectedCountry
+  setSelectedCountry,
+  countries,
 }: FilterBarProps) {
-  const countries = ['All', 'Netherlands', 'Germany', 'France', 'Italy', 'England', 'Belgium'];
+  const countryOptions = ['All', ...countries];
 
   return (
     <div className="bg-card border-b border-border shadow-sm">
@@ -69,7 +71,7 @@ export function FilterBar({
               onChange={(e) => setSelectedCountry(e.target.value)}
               className="bg-transparent focus:outline-none focus:ring-0 cursor-pointer"
             >
-              {countries.map((country) => (
+              {countryOptions.map((country) => (
                 <option key={country} value={country}>
                   {country}
                 </option>

@@ -1,33 +1,62 @@
 import { useParams, useNavigate } from 'react-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Calendar, MapPin, Globe, FileText, Ruler, BookOpen, Languages, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Header } from '../components/Header';
 import { ImageCarousel } from '../components/ImageCarousel';
 import { ContributionsList } from '../components/ContributionsList';
-import { detailedAlbum } from '../data/detailedAlbum';
+import { fetchAlbumDetail } from '../api';
+import { Album } from '../types';
 
 export default function AlbumDetailPage() {
   const { albumId, contributionId } = useParams();
   const navigate = useNavigate();
 
-  // Scroll to top when page loads or when navigating between contributions
+  const [album, setAlbum] = useState<Album | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!albumId) return;
+    setLoading(true);
+    setError(null);
+    fetchAlbumDetail(albumId)
+      .then((data) => { setAlbum(data); setLoading(false); })
+      .catch(() => { setError('Could not load album.'); setLoading(false); });
+  }, [albumId]);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [albumId, contributionId]);
 
-  // In a real app, you'd fetch the album by ID
-  const album = detailedAlbum;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+          Loading album…
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !album) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="px-6 py-4 rounded-lg bg-destructive/10 border border-destructive/30 text-sm text-destructive">
+            {error ?? 'Album not found.'}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const contribution = contributionId
     ? album.contributions?.find((c) => c.id === contributionId)
     : null;
 
   const isMainPage = !contributionId;
-
-  // Log for debugging
-  console.log('Album ID:', albumId);
-  console.log('Contribution ID:', contributionId);
-  console.log('Is Main Page:', isMainPage);
-  console.log('Contributions:', album.contributions);
 
   // Navigation logic for Previous/Next buttons
   const sortedContributions = [...(album.contributions || [])].sort((a, b) => {
@@ -142,6 +171,9 @@ export default function AlbumDetailPage() {
                 {!isMainPage && contribution?.contributorTitle && (
                   <p className="text-sm text-muted-foreground mt-1">{contribution.contributorTitle}</p>
                 )}
+                {!isMainPage && contribution?.name && (
+                  <p className="text-sm text-muted-foreground mt-1">{contribution.name}</p>
+                )}
               </div>
 
               <div className="p-6 space-y-4">
@@ -150,7 +182,7 @@ export default function AlbumDetailPage() {
                     {/* Album Overview Metadata */}
                     {album.description && (
                       <div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
+                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                           {album.description}
                         </p>
                       </div>
@@ -227,9 +259,9 @@ export default function AlbumDetailPage() {
                 ) : (
                   <>
                     {/* Contribution Metadata */}
-                    {contribution?.text && (
+                    {contribution?.description && (
                       <div className="p-4 bg-accent/20 rounded-lg border border-border">
-                        <p className="text-sm italic text-foreground">&ldquo;{contribution.text}&rdquo;</p>
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{contribution.description}</p>
                       </div>
                     )}
 
@@ -266,6 +298,23 @@ export default function AlbumDetailPage() {
                           <div className="flex-1 min-w-0">
                             <div className="text-xs text-muted-foreground">Page Number</div>
                             <div className="text-sm text-foreground">Page {contribution.pageNumber}</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {contribution.sourceUrl && (
+                        <div className="flex items-start gap-3">
+                          <Globe className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-muted-foreground">Source</div>
+                            <a
+                              href={contribution.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-secondary hover:underline break-all"
+                            >
+                              View on data.bibliotheken.nl
+                            </a>
                           </div>
                         </div>
                       )}

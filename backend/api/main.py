@@ -216,6 +216,37 @@ def _contribution_scan_url(album_id: str, page: int | None, total_scans: int, nu
     return f"/images/{album_id}/page_{page:03d}.jpg" if direct.exists() else None
 
 
+@app.get("/api/stats")
+def get_stats():
+    """Return aggregate stats: total albums, distinct countries, and year span."""
+    with get_cursor() as cur:
+        cur.execute("SELECT COUNT(*) AS count FROM album_table")
+        album_count = cur.fetchone()["count"]
+
+        cur.execute("SELECT DISTINCT raw_location FROM location_album_table")
+        location_rows = cur.fetchall()
+        country_count = len({
+            _derive_country(row["raw_location"])
+            for row in location_rows
+            if _derive_country(row["raw_location"]) != "Unknown"
+        })
+
+        cur.execute("""
+            SELECT
+                MIN(EXTRACT(YEAR FROM datecreated))::int AS min_year,
+                MAX(EXTRACT(YEAR FROM datecreated))::int AS max_year
+            FROM album_table
+            WHERE datecreated IS NOT NULL
+        """)
+        year_row = cur.fetchone()
+
+    year_span = 0
+    if year_row and year_row["min_year"] and year_row["max_year"]:
+        year_span = year_row["max_year"] - year_row["min_year"]
+
+    return {"albums": album_count, "countries": country_count, "years": year_span}
+
+
 @app.get("/api/countries", response_model=list[str])
 def list_countries():
     """Return the sorted list of countries present in the album data."""

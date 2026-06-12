@@ -15,12 +15,12 @@ export default function HomePage() {
   useEffect(() => {
     fetchAlbums()
       .then((data) => { setAlbums(data); setAlbumsLoading(false); })
-      .catch(() => { setAlbumsError('Could not load albums.'); setAlbumsLoading(false); });
+      .catch(() => { setAlbumsError('Kon albums niet laden.'); setAlbumsLoading(false); });
   }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [yearRange, setYearRange] = useState<[number, number]>([1550, 1900]);
-  const [selectedCountry, setSelectedCountry] = useState('All');
+  const [selectedCountry, setSelectedCountry] = useState('Alle');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const itemsPerPage = 8;
@@ -56,7 +56,7 @@ export default function HomePage() {
         setDetailLoading(false);
       })
       .catch(() => {
-        setDetailError('Could not load album details.');
+        setDetailError('Kon albumdetails niet laden.');
         setDetailLoading(false);
       });
   }, [selectedAlbumId]);
@@ -71,7 +71,7 @@ export default function HomePage() {
 
       const matchesYear = album.year >= yearRange[0] && album.year <= yearRange[1];
 
-      const matchesCountry = selectedCountry === 'All' || album.country === selectedCountry;
+      const matchesCountry = selectedCountry === 'Alle' || album.country === selectedCountry;
 
       return matchesSearch && matchesYear && matchesCountry;
     });
@@ -122,7 +122,7 @@ export default function HomePage() {
               )}
               {albumsLoading ? (
                 <div className="flex-1 flex items-center justify-center bg-card border border-border rounded-lg text-sm text-muted-foreground">
-                  Loading albums…
+                  Albums laden…
                 </div>
               ) : (
                 <AlbaList

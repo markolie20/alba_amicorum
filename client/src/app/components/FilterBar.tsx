@@ -19,7 +19,7 @@ export function FilterBar({
   setSelectedCountry,
   countries,
 }: FilterBarProps) {
-  const countryOptions = ['All', ...countries];
+  const countryOptions = ['Alle', ...countries];
 
   return (
     <div className="bg-card border-b border-border shadow-sm">
@@ -31,7 +31,7 @@ export function FilterBar({
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search albums by name, owner, or location..."
+                placeholder="Zoek albums op naam, eigenaar of locatie..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring transition-all"

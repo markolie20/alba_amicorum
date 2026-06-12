@@ -8,6 +8,12 @@ async function apiFetch<T>(path: string): Promise<T> {
   return res.json();
 }
 
+export interface Stats {
+  albums: number;
+  countries: number;
+  years: number;
+}
+
 export const fetchAlbums = (): Promise<Album[]> =>
   apiFetch('/api/albums');
 
@@ -16,3 +22,6 @@ export const fetchAlbumDetail = (id: string): Promise<Album> =>
 
 export const fetchCountries = (): Promise<string[]> =>
   apiFetch('/api/countries');
+
+export const fetchStats = (): Promise<Stats> =>
+  apiFetch('/api/stats');

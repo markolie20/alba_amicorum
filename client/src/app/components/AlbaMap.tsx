@@ -46,9 +46,13 @@ export function AlbaMap({ albums, selectedAlbumId, selectedAlbumDetail, detailLo
     const albumMarkerPane = map.getPane('albumMarkerPane');
     if (albumMarkerPane) albumMarkerPane.style.zIndex = '615';
 
+    map.createPane('contributionMarkerPane');
+    const contributionMarkerPane = map.getPane('contributionMarkerPane');
+    if (contributionMarkerPane) contributionMarkerPane.style.zIndex = '612';
+
     map.createPane('numbersPane');
     const numbersPane = map.getPane('numbersPane');
-    if (numbersPane) numbersPane.style.zIndex = '620';
+    if (numbersPane) numbersPane.style.zIndex = '610';
 
     mapInstanceRef.current = map;
 
@@ -109,9 +113,8 @@ export function AlbaMap({ albums, selectedAlbumId, selectedAlbumDetail, detailLo
       const displayText = selectedAlbumId ? '' : group.count;
       const pinHtml = `
         <div style="position:relative;width:24px;height:34px">
-          <svg width="24" height="34" viewBox="0 0 24 34" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))">
-            <path d="${PIN_PATH}" style="fill:hsl(var(--secondary))"/>
-            <circle cx="12" cy="11" r="4" fill="white" fill-opacity="0.8"/>
+          <svg width="24" height="34" viewBox="0 0 24 34" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 4px rgba(80,110,160,0.25))">
+            <path d="${PIN_PATH}" style="fill:var(--primary)" stroke="black" stroke-width="1"/>
           </svg>
           ${displayText !== '' ? `<div style="position:absolute;top:4px;left:0;width:24px;text-align:center;color:white;font-size:10px;font-weight:700;line-height:1;pointer-events:none">${displayText}</div>` : ''}
         </div>`;
@@ -208,13 +211,13 @@ export function AlbaMap({ albums, selectedAlbumId, selectedAlbumDetail, detailLo
 
         Object.values(contributionGroups).forEach((group) => {
           const icon = L.divIcon({
-            html: `<svg width="24" height="34" viewBox="0 0 24 34" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))"><path d="${PIN_PATH}" fill="#cba052"/><circle cx="12" cy="11" r="4" fill="white" fill-opacity="0.8"/></svg>`,
+            html: `<svg width="24" height="34" viewBox="0 0 24 34" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 2px 4px rgba(80,110,160,0.25))"><path d="${PIN_PATH}" style="fill:var(--secondary)" stroke="black" stroke-width="1"/></svg>`,
             className: '',
             iconSize: [24, 34],
             iconAnchor: [12, 34],
           });
 
-          const marker = L.marker([group.lat, group.lng], { icon });
+          const marker = L.marker([group.lat, group.lng], { icon, pane: 'contributionMarkerPane' });
 
           let popupContent = `
             <div class="p-2">
@@ -236,49 +239,101 @@ export function AlbaMap({ albums, selectedAlbumId, selectedAlbumDetail, detailLo
           marker.addTo(mapInstanceRef.current!);
         });
 
-        // Number labels placed along each segment, anchored near the departure point.
-        // A→B puts its label near A; B→A puts its label near B.
-        // Repeated A→B trips are staggered further along the line so they don't stack.
+        // Number labels placed on each segment, split by direction.
+        // For a segment A↔B with labels [1,5,7,14] going A→B and [2,11] going B→A,
+        // the layout is: A--1--5--7--14----11--2--B
+        // (one empty slot separates the two directions; each side sorted ascending from its origin)
         if (pathCoordinates.length >= 2) {
-          const map = mapInstanceRef.current!;
-          // Track how many times each directed segment has been seen (keyed by rounded pixel coords)
-          const segmentOccurrences = new Map<string, number>();
+          type SegEntry = { ab: number[]; ba: number[]; aLat: number; aLng: number; bLat: number; bLng: number };
+          const segmentMap = new Map<string, SegEntry>();
           let segLabel = 1;
 
+          // Pass 1: collect every journey step into its undirected segment bucket.
+          // Same-location steps (contribution didn't travel) are skipped without
+          // advancing the counter, so displayed numbers stay consecutive.
           for (let i = 0; i < pathCoordinates.length - 1; i++) {
             const [lat1, lng1] = pathCoordinates[i];
             const [lat2, lng2] = pathCoordinates[i + 1];
             if (lat1 === lat2 && lng1 === lng2) continue;
 
-            const p1 = map.latLngToContainerPoint([lat1, lng1]);
-            const p2 = map.latLngToContainerPoint([lat2, lng2]);
-            const dx = p2.x - p1.x;
-            const dy = p2.y - p1.y;
-            const pixelLen = Math.sqrt(dx * dx + dy * dy);
+            // Canonical key: lexicographically smaller endpoint is "A".
+            const k1 = `${lat1},${lng1}`;
+            const k2 = `${lat2},${lng2}`;
+            const isForward = k1 < k2;
+            const segKey = isForward ? `${k1}|${k2}` : `${k2}|${k1}`;
 
-            // Key captures direction: A→B and B→A are different keys
-            const segKey = `${Math.round(p1.x / 5)},${Math.round(p1.y / 5)}-${Math.round(p2.x / 5)},${Math.round(p2.y / 5)}`;
-            const occurrence = segmentOccurrences.get(segKey) ?? 0;
-            segmentOccurrences.set(segKey, occurrence + 1);
+            if (!segmentMap.has(segKey)) {
+              segmentMap.set(segKey, {
+                ab: [], ba: [],
+                aLat: isForward ? lat1 : lat2, aLng: isForward ? lng1 : lng2,
+                bLat: isForward ? lat2 : lat1, bLng: isForward ? lng2 : lng1,
+              });
+            }
+            const entry = segmentMap.get(segKey)!;
+            if (isForward) entry.ab.push(segLabel);
+            else           entry.ba.push(segLabel);
+            segLabel++;
+          }
 
-            // Each repeat steps 18px further along the line from the departure dot
-            const pixelOffset = Math.min(28 + occurrence * 18, pixelLen * 0.48);
-            const fraction = pixelOffset / pixelLen;
-            const labelPoint = map.containerPointToLatLng(
-              L.point(p1.x + dx * fraction, p1.y + dy * fraction)
+          // Pass 2: place labels and directional arrows on each segment.
+          const makeLabelIcon = (lbl: number) => L.divIcon({
+            html: `<div style="background:#000;color:#fff;border-radius:999px;min-width:20px;height:20px;padding:0 5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,0.5);white-space:nowrap;">${lbl}</div>`,
+            className: '',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+          });
+
+          for (const { ab, ba, aLat, aLng, bLat, bLng } of segmentMap.values()) {
+            if (ab.length === 0 && ba.length === 0) continue;
+
+            const abSorted = [...ab].sort((x, y) => x - y);
+            const baSorted = [...ba].sort((x, y) => x - y);
+            const totalDivisions = abSorted.length + baSorted.length + 2;
+
+            const interp = (f: number): [number, number] => [
+              aLat + (bLat - aLat) * f,
+              aLng + (bLng - aLng) * f,
+            ];
+
+            // Screen-space angle of A→B, used to rotate arrowheads.
+            const pA = mapInstanceRef.current!.latLngToContainerPoint([aLat, aLng]);
+            const pB = mapInstanceRef.current!.latLngToContainerPoint([bLat, bLng]);
+            const angleAB = Math.atan2(pB.y - pA.y, pB.x - pA.x) * 180 / Math.PI;
+
+            const makeArrow = (f: number, angle: number) =>
+              L.marker(interp(f), {
+                icon: L.divIcon({
+                  html: `<div style="transform:rotate(${angle}deg);display:flex;align-items:center;justify-content:center;width:10px;height:10px;"><svg width="10" height="10" viewBox="0 0 10 10"><polygon points="0,0 10,5 0,10" fill="#333"/></svg></div>`,
+                  className: '',
+                  iconSize: [10, 10],
+                  iconAnchor: [5, 5],
+                }),
+                pane: 'numbersPane',
+              }).addTo(mapInstanceRef.current!);
+
+            // Number labels.
+            abSorted.forEach((lbl, idx) =>
+              L.marker(interp((idx + 1) / totalDivisions), { icon: makeLabelIcon(lbl), pane: 'numbersPane' }).addTo(mapInstanceRef.current!)
+            );
+            baSorted.forEach((lbl, idx) =>
+              L.marker(interp((totalDivisions - 1 - idx) / totalDivisions), { icon: makeLabelIcon(lbl), pane: 'numbersPane' }).addTo(mapInstanceRef.current!)
             );
 
-            const numberIcon = L.divIcon({
-              html: `<div style="background:rgba(0,0,0,0.62);color:#fff;border-radius:999px;min-width:20px;height:20px;padding:0 5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,0.5);white-space:nowrap;">${segLabel}</div>`,
-              className: '',
-              iconSize: [20, 20],
-              iconAnchor: [10, 10],
+            // A→B arrows: one before each A→B label, starting from A.
+            // Layout: A ->- l1 ->- l2 ->- ... ->- ln  [gap]
+            abSorted.forEach((_, idx) => {
+              const fPrev = idx === 0 ? 0 : idx / totalDivisions;
+              const fCurr = (idx + 1) / totalDivisions;
+              makeArrow((fPrev + fCurr) / 2, angleAB);
             });
-            L.marker([labelPoint.lat, labelPoint.lng], {
-              icon: numberIcon,
-              pane: 'numbersPane',
-            }).addTo(map);
-            segLabel++;
+
+            // B→A arrows: one between each consecutive B→A pair, then one to B.
+            // Layout: [gap]  lm -<- ... -<- l1 -<- B
+            for (let j = baSorted.length - 1; j >= 0; j--) {
+              const fThis = (totalDivisions - 1 - j) / totalDivisions;
+              const fNext = j === 0 ? 1 : (totalDivisions - j) / totalDivisions;
+              makeArrow((fThis + fNext) / 2, angleAB + 180);
+            }
           }
         }
       }

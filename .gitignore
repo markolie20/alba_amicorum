@@ -17,3 +17,5 @@ node_modules
 node_modules/
 node_modules/*
 client/public/*
+map_change
+selenium_test/screenshots/*

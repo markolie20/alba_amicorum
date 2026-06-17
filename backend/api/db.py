@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 @contextmanager
 def get_conn():
-    conn = psycopg2.connect(dbname="alba")
+    conn = psycopg2.connect(dbname="alba", user="postgres", password="admin", host="localhost")
     try:
         yield conn
     finally:

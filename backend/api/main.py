@@ -429,7 +429,7 @@ def get_album(album_id: str):
             if d.month == 1 and d.day == 1:
                 date_str = str(d.year)
             else:
-                date_str = d.strftime("%-d %B %Y")
+                date_str = f"{d.day} {d.strftime('%B %Y')}"
         else:
             date_str = "Unknown"
 

@@ -38,7 +38,7 @@ export const detailedAlbum: Album = {
       text: 'Amicitia vera est vitae condimentum - True friendship is the spice of life',
       language: 'Latin',
       pageNumber: 12,
-      scanUrl: 'https://images.unsplash.com/photo-1716840550677-31616e88f51b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhbnRpcXVlJTIwbWFudXNjcmlwdCUyMHBhZ2UlMjBoYW5kd3JpdGluZ3xlbnwxfHx8fDE3NzY1OTUwNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      scanUrls: ['https://images.unsplash.com/photo-1716840550677-31616e88f51b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhbnRpcXVlJTIwbWFudXNjcmlwdCUyMHBhZ2UlMjBoYW5kd3JpdGluZ3xlbnwxfHx8fDE3NzY1OTUwNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
     },
     {
       id: 'c2',
@@ -52,7 +52,7 @@ export const detailedAlbum: Album = {
       text: 'In natura veritas - In nature, truth',
       language: 'Latin',
       pageNumber: 28,
-      scanUrl: 'https://images.unsplash.com/photo-1593367192847-3b8e27fe9373?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpZXZhbCUyMGJvb2slMjBoYW5kd3JpdHRlbiUyMHRleHR8ZW58MXx8fHwxNzc2NTk1MDU2fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      scanUrls: ['https://images.unsplash.com/photo-1593367192847-3b8e27fe9373?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZWRpZXZhbCUyMGJvb2slMjBoYW5kd3JpdHRlbiUyMHRleHR8ZW58MXx8fHwxNzc2NTk1MDU2fDA&ixlib=rb-4.1.0&q=80&w=1080',
     },
     {
       id: 'c3',
@@ -66,7 +66,7 @@ export const detailedAlbum: Album = {
       text: 'Cogito, ergo sum - I think, therefore I am',
       language: 'Latin',
       pageNumber: 45,
-      scanUrl: 'https://images.unsplash.com/photo-1776135852841-29a9a7155205?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvbGQlMjBib29rJTIwcGFnZXMlMjB2aW50YWdlfGVufDF8fHx8MTc3NjU5NTA1N3ww&ixlib=rb-4.1.0&q=80&w=1080',
+      scanUrls: ['https://images.unsplash.com/photo-1776135852841-29a9a7155205?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvbGQlMjBib29rJTIwcGFnZXMlMjB2aW50YWdlfGVufDF8fHx8MTc3NjU5NTA1N3ww&ixlib=rb-4.1.0&q=80&w=1080',
     },
     {
       id: 'c4',
@@ -80,7 +80,7 @@ export const detailedAlbum: Album = {
       text: 'Qui docet, discit - He who teaches, learns',
       language: 'Latin',
       pageNumber: 19,
-      scanUrl: 'https://images.unsplash.com/photo-1773606381964-11a82a2e17fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaXN0b3JpY2FsJTIwZG9jdW1lbnQlMjBjYWxsaWdyYXBoeXxlbnwxfHx8fDE3NzY1OTUwNTd8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      scanUrls: ['https://images.unsplash.com/photo-1773606381964-11a82a2e17fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaXN0b3JpY2FsJTIwZG9jdW1lbnQlMjBjYWxsaWdyYXBoeXxlbnwxfHx8fDE3NzY1OTUwNTd8MA&ixlib=rb-4.1.0&q=80&w=1080',
     },
     {
       id: 'c5',
@@ -94,7 +94,7 @@ export const detailedAlbum: Album = {
       text: 'Per aspera ad astra - Through hardships to the stars',
       language: 'Latin',
       pageNumber: 67,
-      scanUrl: 'https://images.unsplash.com/photo-1467688695332-6b486449d78f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZW5haXNzYW5jZSUyMHdyaXRpbmclMjBwYXJjaG1lbnR8ZW58MXx8fHwxNzc2NTk1MDU4fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      scanUrls: ['https://images.unsplash.com/photo-1467688695332-6b486449d78f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZW5haXNzYW5jZSUyMHdyaXRpbmclMjBwYXJjaG1lbnR8ZW58MXx8fHwxNzc2NTk1MDU4fDA&ixlib=rb-4.1.0&q=80&w=1080',
     },
   ],
 };

@@ -58,12 +58,9 @@ export default function AlbumDetailPage() {
 
   const isMainPage = !contributionId;
 
-  // Navigation logic for Previous/Next buttons
-  const sortedContributions = [...(album.contributions || [])].sort((a, b) => {
-    const yearA = parseInt(a.date.match(/\d{4}/)?.[0] || '0');
-    const yearB = parseInt(b.date.match(/\d{4}/)?.[0] || '0');
-    return yearA - yearB;
-  });
+  const sortedContributions = [...(album.contributions || [])].sort((a, b) =>
+    (a.pageNumber ?? Infinity) - (b.pageNumber ?? Infinity)
+  );
 
   const currentIndex = contributionId
     ? sortedContributions.findIndex((c) => c.id === contributionId)
@@ -145,13 +142,9 @@ export default function AlbumDetailPage() {
               <div className="h-[600px]">
                 <ImageCarousel images={album.scans || []} />
               </div>
-            ) : contribution?.scanUrl ? (
-              <div className="w-full h-[600px] bg-card border border-border rounded-lg overflow-hidden shadow-sm">
-                <img
-                  src={contribution.scanUrl}
-                  alt={`Contribution by ${contribution.contributor}`}
-                  className="w-full h-full object-contain bg-accent/20"
-                />
+            ) : contribution?.scanUrls && contribution.scanUrls.length > 0 ? (
+              <div className="h-[600px]">
+                <ImageCarousel images={contribution.scanUrls} />
               </div>
             ) : (
               <div className="w-full h-[600px] bg-card border border-border rounded-lg flex items-center justify-center shadow-sm">

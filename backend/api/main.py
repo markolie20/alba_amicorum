@@ -189,18 +189,27 @@ def _scan_urls(album_id: str) -> list[str]:
     return [f"/images/{album_id}/{name}" for name in files]
 
 
-def _contribution_scan_url(album_id: str, page: int | None, total_scans: int, num_pages: int | None) -> str | None:
-    """Return the scan URL for a contribution page, handling both single- and double-scan albums.
+def _contribution_scan_urls(album_id: str, bijdrage_id: str, page: int | None, total_scans: int, num_pages: int | None) -> list[str]:
+    """Return all scan URLs for a contribution.
 
-    Double-scan albums (both recto and verso scanned for each leaf) have ~2× scan files
-    relative to their page count. For those, scan = 2 * page + 1 (recto, 2 front-matter
-    scans assumed). Single-scan albums use page directly as the scan file number.
+    Prefers individually scraped images saved as
+    contributions/<bijdrage_id>_0.jpg, _1.jpg, … by scrape_contribution_images.py.
+    Falls back to the page-number heuristic for albums that only have bulk scans.
     """
-    if page is None:
-        return None
     folder = _IMAGES_DIR / album_id
     if not folder.is_dir():
-        return None
+        return []
+
+    # Prefer scraped per-contribution images (multiple possible).
+    contrib_dir = folder / "contributions"
+    if contrib_dir.is_dir():
+        scraped = sorted(contrib_dir.glob(f"{bijdrage_id}_*.jpg"))
+        if scraped:
+            return [f"/images/{album_id}/contributions/{f.name}" for f in scraped]
+
+    # Fall back to page-number heuristic.
+    if page is None:
+        return []
 
     is_double_scan = num_pages is not None and total_scans >= num_pages * 1.5
 
@@ -210,10 +219,10 @@ def _contribution_scan_url(album_id: str, page: int | None, total_scans: int, nu
             if 1 <= scan_num <= total_scans:
                 candidate = folder / f"page_{scan_num:03d}.jpg"
                 if candidate.exists():
-                    return f"/images/{album_id}/page_{scan_num:03d}.jpg"
+                    return [f"/images/{album_id}/page_{scan_num:03d}.jpg"]
 
     direct = folder / f"page_{page:03d}.jpg"
-    return f"/images/{album_id}/page_{page:03d}.jpg" if direct.exists() else None
+    return [f"/images/{album_id}/page_{page:03d}.jpg"] if direct.exists() else []
 
 
 @app.get("/api/stats")
@@ -412,7 +421,7 @@ def get_album(album_id: str):
             c["raw_location"], c["latitude"], c["longitude"]
         )
         page = c["page"]
-        scan_url = _contribution_scan_url(album_id, page, total_scans, num_pages)
+        scan_urls = _contribution_scan_urls(album_id, str(c["bijdrageid"]), page, total_scans, num_pages)
 
         # Format date: show full date when month/day are known, otherwise just the year
         d = c["datecreated"]
@@ -433,7 +442,7 @@ def get_album(album_id: str):
             lat=c_lat,
             lng=c_lng,
             pageNumber=page,
-            scanUrl=scan_url,
+            scanUrls=scan_urls,
             name=c["name"],
             description=c["description"],
             sourceUrl=c["url"],

@@ -23,12 +23,9 @@ export function ContributionsList({
   const { contributionId } = useParams();
   const isMainPage = !contributionId;
 
-  // Extract year from date string and sort by year
-  const sortedContributions = [...contributions].sort((a, b) => {
-    const yearA = parseInt(a.date.match(/\d{4}/)?.[0] || '0');
-    const yearB = parseInt(b.date.match(/\d{4}/)?.[0] || '0');
-    return yearA - yearB;
-  });
+  const sortedContributions = [...contributions].sort((a, b) =>
+    (a.pageNumber ?? Infinity) - (b.pageNumber ?? Infinity)
+  );
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
@@ -96,10 +93,10 @@ export function ContributionsList({
               }`}
             >
               {/* Image */}
-              {contribution.scanUrl && (
+              {contribution.scanUrls?.[0] && (
                 <div className="flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border border-border">
                   <img
-                    src={contribution.scanUrl}
+                    src={contribution.scanUrls[0]}
                     alt={`Contribution by ${contribution.contributor}`}
                     className="w-full h-full object-cover"
                   />

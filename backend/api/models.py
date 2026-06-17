@@ -17,7 +17,7 @@ class Contribution(BaseModel):
     lat: Optional[float] = None
     lng: Optional[float] = None
     pageNumber: Optional[int] = None
-    scanUrl: Optional[str] = None
+    scanUrls: list[str] = []
     name: Optional[str] = None
     description: Optional[str] = None
     sourceUrl: Optional[str] = None

@@ -31,7 +31,7 @@ export interface Contribution {
   text?: string;
   language?: string;
   pageNumber?: number;
-  scanUrl?: string;
+  scanUrls?: string[];
   name?: string;
   description?: string;
   sourceUrl?: string;
